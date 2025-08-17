@@ -1,432 +1,458 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<title>Check Mobil-Home</title>
-<style>
-  body { font-family: sans-serif; padding: 20px; }
-  h1 { text-align: center; }
-  select, input { margin: 5px; }
-  table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-  tr.family { cursor: pointer; background: #f0f0f0; }
-  tr.subfamily { background: #fafafa; }
-  .selected-criteria { margin-top: 20px; border: 1px solid #ccc; padding: 10px; }
-  .stars { cursor: pointer; color: lightgray; }
-  .stars .active { color: gold; }
-  .action-btn { margin-left: 5px; cursor: pointer; color: blue; text-decoration: underline; }
+  <meta charset="UTF-8">
+  <title>Check Mobil-Home</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
 
-  tr.subfamily:hover {
-  background: #e0eaff;
-  }
-  tr.subfamily.selected {
-    background: #b3d1ff;
-    font-weight: bold;
-  }
+    h1 {
+      text-align: center;
+    }
 
-  #submitBtn {
-  display: block;
-  margin: 40px auto 0 auto;
-  padding: 18px 40px;
-  font-size: 1.5em;
-  background: #1976d2;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  box-shadow: 0 2px 8px #1976d233;
-  transition: background 0.2s;
-}
-#submitBtn:hover {
-  background: #1565c0;
-}
+    select,
+    input {
+      margin: 5px;
+    }
 
-</style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+
+    tr.family {
+      cursor: pointer;
+      background: #f0f0f0;
+    }
+
+    tr.subfamily {
+      background: #fafafa;
+    }
+
+    .selected-criteria {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+
+    .stars {
+      cursor: pointer;
+      color: lightgray;
+    }
+
+    .stars .active {
+      color: gold;
+    }
+
+    .action-btn {
+      margin-left: 5px;
+      cursor: pointer;
+      color: blue;
+      text-decoration: underline;
+    }
+
+    tr.subfamily:hover {
+      background: #e0eaff;
+    }
+
+    tr.subfamily.selected {
+      background: #b3d1ff;
+      font-weight: bold;
+    }
+
+    #submitBtn {
+      display: block;
+      margin: 40px auto 0 auto;
+      padding: 18px 40px;
+      font-size: 1.5em;
+      background: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 2px 8px #1976d233;
+      transition: background 0.2s;
+    }
+
+    #submitBtn:hover {
+      background: #1565c0;
+    }
+
+    .btn {
+      display: block;
+      margin: 20px auto 0 auto;
+      padding: 18px 40px;
+      font-size: 1.5em;
+      background: #4caf50;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 2px 8px #4caf5033;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: #45a049;
+    }
+  </style>
 </head>
+
 <body>
-
-<h1>Check Mobil-Home</h1>
-
-<label for="typeSelect">Type :</label>
-<select id="typeSelect">
-  <option value="MH">MH</option>
-  <option value="CH">CH</option>
-</select>
-
-<label for="numeroInput">Numéro :</label>
-<input type="text" id="numeroInput">
-
-<table id="criteriaTable">
-  <thead>
-    <tr>
-      <th>Famille</th>
-      <th>État Général</th>
-    </tr>
-  </thead>
-  <tbody>
-    <!-- Familles générées dynamiquement -->
-  </tbody>
-</table>
-
-<div class="selected-criteria">
-  <h3>Critères sélectionnés :</h3>
-  <ul id="selectedList"></ul>
-</div>
-
-<script>
-const URL = "https://script.google.com/macros/s/AKfycbzo8UtXs31KSDYJruqOzV1NPd2wwrW5Kw7Wmj8-HJmGin93IpmnEjufB7F48EnGoX-A/exec";
-
-const families = [
-  { name: "Terrasse", subs: ["Aucun Problème", "Escaliers HS", "Remplacer Structure", "Remplacer Lames", "Poncer et proteger", "Etat général trop ancien"], stars: 0 },
-  { name: "Menuiseries", subs: ["Aucun Problème", "Porte Entree Frotte","Porte Entree HS","Fenêtres Bloquée Ch","Fenêtres Bloquée Sdb","Fenêtres Bloquée cuisine","Fenêtres Bloquée salon","Etat général trop ancien"], stars: 0 },
-  { name: "Plomberie", subs: ["Aucun Problème", "Fuite SDB","Fuite Cuisine","Probleme différence de T° de l'eau SDB","Douche déteriorée","Joints cuisine HS","Joints SDB HS","Etat général trop ancien"], stars: 0 },
-  { name: "Electricité", subs: ["Aucun Problème", "Eclairage trop faible","Manque de prises","Etat général trop ancien"], stars: 0 },
-  { name: "Piscine", subs: ["Précisez"], stars: 0 } // Ajout de la famille Piscine
-];
-
-let selectedCriteria = [];
-
-function renderFamilies() {
-  const tbody = document.querySelector("#criteriaTable tbody");
-  tbody.innerHTML = "";
-  families.forEach((family, i) => {
-    const tr = document.createElement("tr");
-    tr.classList.add("family");
-    tr.dataset.index = i;
-    // Affichage étoiles pour la saisie uniquement
-    const starsHtml = Array.from({length: 5}, (_, idx) => 
-      `<span class="star ${idx < family.stars ? 'active' : ''}" data-star="${idx+1}">&#9733;</span>`
-    ).join("");
-    tr.innerHTML = `<td>${family.name}</td><td class="stars">${starsHtml}</td>`;
-    tr.querySelectorAll(".star").forEach(starEl => {
-      starEl.onclick = (e) => {
-        e.stopPropagation();
-        const numero = document.getElementById("numeroInput").value.trim();
-        if (!numero) {
-          alert("Merci de renseigner le numéro.");
-          return;
+  <h1>Check Mobil-Home</h1>
+  <label for="typeSelect">Type :</label>
+  <select id="typeSelect">
+    <option value="MH">MH</option>
+    <option value="CH">CH</option>
+  </select>
+  <label for="numeroInput">Numéro :</label>
+  <input type="text" id="numeroInput">
+  <table id="criteriaTable">
+    <thead>
+      <tr>
+        <th>Famille</th>
+        <th>État Général</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Familles générées dynamiquement -->
+    </tbody>
+  </table>
+  <div class="selected-criteria">
+    <h3>Critères sélectionnés :</h3>
+    <ul id="selectedList"></ul>
+  </div>
+  <script>
+    const URL = "https://script.google.com/macros/s/AKfycbzo8UtXs31KSDYJruqOzV1NPd2wwrW5Kw7Wmj8-HJmGin93IpmnEjufB7F48EnGoX-A/exec";
+    const families = [
+      { name: "Terrasse", subs: ["Aucun Problème", "Escaliers HS", "Remplacer Structure", "Remplacer Lames", "Poncer et proteger", "Etat général trop ancien"], stars: 0 },
+      { name: "Menuiseries", subs: ["Aucun Problème", "Porte Entree Frotte", "Porte Entree HS", "Fenêtres Bloquée Ch", "Fenêtres Bloquée Sdb", "Fenêtres Blo partagé cuisine", "Fenêtres Bloquée salon", "Etat général trop ancien"], stars: 0 },
+      { name: "Plomberie", subs: ["Aucun Problème", "Fuite SDB", "Fuite Cuisine", "Probleme différence de T° de l'eau SDB", "Douche déteriorée", "Joints cuisine HS", "Joints SDB HS", "Etat général trop ancien"], stars: 0 },
+      { name: "Electricité", subs: ["Aucun Problème", "Eclairage trop faible", "Manque de prises", "Etat général trop ancien"], stars: 0 },
+      { name: "Piscine", subs: ["Précisez"], stars: 0 }
+    ];
+    let selectedCriteria = [];
+    function renderFamilies() {
+      const tbody = document.querySelector("#criteriaTable tbody");
+      tbody.innerHTML = "";
+      families.forEach((family, i) => {
+        const tr = document.createElement("tr");
+        tr.classList.add("family");
+        tr.dataset.index = i;
+        const starsHtml = Array.from({ length: 5 }, (_, idx) =>
+          `<span class="star ${idx < family.stars ? 'active' : ''}" data-star="${idx + 1}">&#9733;</span>`
+        ).join("");
+        tr.innerHTML = `<td>${family.name}</td><td class="stars">${starsHtml}</td>`;
+        tr.querySelectorAll(".star").forEach(starEl => {
+          starEl.onclick = (e) => {
+            e.stopPropagation();
+            const numero = document.getElementById("numeroInput").value.trim();
+            if (!numero) {
+              alert("Merci de renseigner le numéro.");
+              return;
+            }
+            setStars(i, parseInt(starEl.dataset.star));
+            document.getElementById("submitBtn").style.display = "block";
+          };
+        });
+        tr.onclick = () => toggleSubFamilies(tr, family);
+        tbody.appendChild(tr);
+      });
+    }
+    function setStars(familyIndex, starCount) {
+      families[familyIndex].stars = starCount;
+      renderFamilies();
+    }
+    function toggleSubFamilies(tr, family) {
+      const numero = document.getElementById("numeroInput").value.trim();
+      if (!numero) {
+        alert("Merci de renseigner le numéro.");
+        return;
+      }
+      let next = tr.nextSibling;
+      if (next && next.classList && next.classList.contains("subfamily")) {
+        while (next && next.classList && next.classList.contains("subfamily")) {
+          let toRemove = next;
+          next = next.nextSibling;
+          toRemove.remove();
         }
-        setStars(i, parseInt(starEl.dataset.star));
-        document.getElementById("submitBtn").style.display = "block"; // Réaffiche le bouton
-      };
-    });
-    tr.onclick = () => toggleSubFamilies(tr, family);
-    tbody.appendChild(tr);
-  });
-}
-
-function setStars(familyIndex, starCount) {
-  families[familyIndex].stars = starCount;
-  renderFamilies();
-}
-
-function toggleSubFamilies(tr, family) {
-  const numero = document.getElementById("numeroInput").value.trim();
-  if (!numero) {
-    alert("Merci de renseigner le numéro.");
-    return;
-  }
-
-  let next = tr.nextSibling;
-  if (next && next.classList && next.classList.contains("subfamily")) {
-    while (next && next.classList && next.classList.contains("subfamily")) {
-      let toRemove = next;
-      next = next.nextSibling;
-      toRemove.remove();
-    }
-    return;
-  }
-
-  document.querySelectorAll("tr.subfamily").forEach(s => s.remove());
-  let lastTr = tr;
-  family.subs.forEach(sub => {
-    const subTr = document.createElement("tr");
-    subTr.classList.add("subfamily");
-    if (selectedCriteria.includes(family.name + " - " + sub)) {
-      subTr.classList.add("selected");
-    }
-    subTr.innerHTML = `<td colspan="2">${sub}</td>`;
-    subTr.onclick = (e) => {
-      e.stopPropagation();
-      addCriteria(family.name, sub);
-      subTr.classList.add("selected");
-    };
-    lastTr.after(subTr);
-    lastTr = subTr;
-  });
-
-  // Ajoute le champ "Précisez" à la fin de chaque famille
-  const customTr = document.createElement("tr");
-  customTr.classList.add("subfamily");
-  customTr.innerHTML = `<td colspan="2">
+        return;
+      }
+      document.querySelectorAll("tr.subfamily").forEach(s => s.remove());
+      let lastTr = tr;
+      family.subs.forEach(sub => {
+        const subTr = document.createElement("tr");
+        subTr.classList.add("subfamily");
+        if (selectedCriteria.includes(family.name + " - " + sub)) {
+          subTr.classList.add("selected");
+        }
+        subTr.innerHTML = `<td colspan="2">${sub}</td>`;
+        subTr.onclick = (e) => {
+          e.stopPropagation();
+          addCriteria(family.name, sub);
+          subTr.classList.add("selected");
+        };
+        lastTr.after(subTr);
+        lastTr = subTr;
+      });
+      const customTr = document.createElement("tr");
+      customTr.classList.add("subfamily");
+      customTr.innerHTML = `<td colspan="2">
     <label for="customInput_${family.name}">Autre Précisez :</label>
     <input type="text" id="customInput_${family.name}" placeholder="Votre précision..." style="width:60%;">
     <button id="addCustomBtn_${family.name}" style="margin-left:10px;">Ajouter</button>
   </td>`;
-  customTr.querySelector(`#addCustomBtn_${family.name}`).onclick = (e) => {
-    e.stopPropagation();
-    const value = customTr.querySelector(`#customInput_${family.name}`).value.trim();
-    if (!value) {
-      alert("Merci de préciser votre remarque.");
-      return;
+      customTr.querySelector(`#addCustomBtn_${family.name}`).onclick = (e) => {
+        e.stopPropagation();
+        const value = customTr.querySelector(`#customInput_${family.name}`).value.trim();
+        if (!value) {
+          alert("Merci de préciser votre remarque.");
+          return;
+        }
+        addCriteria(family.name, value);
+        customTr.classList.add("selected");
+      };
+      lastTr.after(customTr);
     }
-    addCriteria(family.name, value);
-    customTr.classList.add("selected");
-  };
-  lastTr.after(customTr);
-}
-
-async function addCriteria(family, sub) {
-  const key = family + " - " + sub;
-  if (!selectedCriteria.includes(key)) {
-    selectedCriteria.push(key);
-    updateSelectedList();
-
-    const type = document.getElementById("typeSelect").value;
-    const numero = document.getElementById("numeroInput").value.trim();
-    if (!numero) return alert("Merci de renseigner le numéro.");
-
-    try {
-      const res = await fetch(URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          action: "add",
-          type: type,
-          numero: numero,
-          famille: family,
-          sousfamille: sub
-        })
+    async function addCriteria(family, sub) {
+      const key = family + " - " + sub;
+      if (!selectedCriteria.includes(key)) {
+        selectedCriteria.push(key);
+        updateSelectedList();
+        const type = document.getElementById("typeSelect").value;
+        const numero = document.getElementById("numeroInput").value.trim();
+        if (!numero) return alert("Merci de renseigner le numéro.");
+        try {
+          const res = await fetch(URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "add",
+              type: type,
+              numero: numero,
+              famille: family,
+              sousfamille: sub
+            })
+          });
+          const result = await res.json();
+          if (result.result === "ok") console.log("✅ Critère enregistré");
+          else console.error("⚠️ Erreur serveur :", result.error);
+        } catch (err) {
+          console.error("❌ Erreur réseau :", err.message);
+        }
+      }
+    }
+    function updateSelectedList() {
+      const ul = document.getElementById("selectedList");
+      ul.innerHTML = "";
+      selectedCriteria.forEach((c, i) => {
+        const li = document.createElement("li");
+        li.textContent = c;
+        const editBtn = document.createElement("span");
+        editBtn.textContent = "Éditer";
+        editBtn.className = "action-btn";
+        editBtn.onclick = () => editCriteria(i);
+        const delBtn = document.createElement("span");
+        delBtn.textContent = "Supprimer";
+        delBtn.className = "action-btn";
+        delBtn.onclick = () => deleteCriteria(i);
+        li.appendChild(editBtn);
+        li.appendChild(delBtn);
+        ul.appendChild(li);
       });
-      const result = await res.json();
-      if (result.result === "ok") console.log("✅ Critère enregistré");
-      else console.error("⚠️ Erreur serveur :", result.error);
-    } catch (err) {
-      console.error("❌ Erreur réseau :", err.message);
     }
-  }
-}
-
-function updateSelectedList() {
-  const ul = document.getElementById("selectedList");
-  ul.innerHTML = "";
-  selectedCriteria.forEach((c, i) => {
-    const li = document.createElement("li");
-    li.textContent = c;
-    const editBtn = document.createElement("span");
-    editBtn.textContent = "Éditer";
-    editBtn.className = "action-btn";
-    editBtn.onclick = () => editCriteria(i);
-    const delBtn = document.createElement("span");
-    delBtn.textContent = "Supprimer";
-    delBtn.className = "action-btn";
-    delBtn.onclick = () => deleteCriteria(i);
-    li.appendChild(editBtn);
-    li.appendChild(delBtn);
-    ul.appendChild(li);
-  });
-}
-
-async function deleteCriteria(index) {
-  const key = selectedCriteria[index];
-  const [family, sub] = key.split(" - ");
-  const numero = document.getElementById("numeroInput").value.trim();
-  const type = document.getElementById("typeSelect").value;
-  selectedCriteria.splice(index, 1);
-  updateSelectedList();
-  try {
-    const res = await fetch(URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        action: "delete",
-        type: type,
-        numero: numero,
-        famille: family,
-        sousfamille: sub
-      })
-    });
-    const result = await res.json();
-    if (result.result === "ok") console.log("✅ Critère supprimé");
-    else console.error("⚠️ Erreur serveur :", result.error);
-  } catch (err) {
-    console.error("❌ Erreur réseau :", err.message);
-  }
-}
-
-function editCriteria(index) {
-  const key = selectedCriteria[index];
-  const [family, sub] = key.split(" - ");
-  const newSub = prompt(`Modifier sous-famille pour ${family}:`, sub);
-  if (newSub && newSub !== sub) {
-    selectedCriteria[index] = family + " - " + newSub;
-    updateSelectedList();
-    const numero = document.getElementById("numeroInput").value.trim();
-    const type = document.getElementById("typeSelect").value;
-    fetch(URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        action: "edit",
-        type: type,
-        numero: numero,
-        famille: family,
-        oldSub: sub,
-        newSub: newSub
-      })
-    }).then(res => res.json())
-      .then(result => {
-        if (result.result === "ok") console.log("✅ Critère modifié");
+    async function deleteCriteria(index) {
+      const key = selectedCriteria[index];
+      const [family, sub] = key.split(" - ");
+      const numero = document.getElementById("numeroInput").value.trim();
+      const type = document.getElementById("typeSelect").value;
+      selectedCriteria.splice(index, 1);
+      updateSelectedList();
+      try {
+        const res = await fetch(URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "delete",
+            type: type,
+            numero: numero,
+            famille: family,
+            sousfamille: sub
+          })
+        });
+        const result = await res.json();
+        if (result.result === "ok") console.log("✅ Critère supprimé");
         else console.error("⚠️ Erreur serveur :", result.error);
-      }).catch(err => console.error("❌ Erreur réseau :", err.message));
-  }
-}
-
-// Initialisation
-renderFamilies();
-</script>
-
-<button id="submitBtn">Soumettre</button>
-<div id="thankYouMessage" style="margin-top: 20px; font-weight: bold;"></div>
-
-<script>
-document.getElementById("submitBtn").onclick = () => {
-  const numero = document.getElementById("numeroInput").value.trim();
-  const msgDiv = document.getElementById("thankYouMessage");
-  const type = document.getElementById("typeSelect").value;
-
-  if (!numero) {
-    msgDiv.innerHTML = ""; 
-    return alert("Merci de renseigner le numéro.");
-  }
-  if (selectedCriteria.length === 0) {
-    msgDiv.innerHTML = ""; 
-    return alert("Merci de sélectionner au moins un critère.");
-  }
-  // Vérifie qu'au moins une étoile est sélectionnée dans chaque famille
-  const missingStars = families.filter(f => f.stars === 0);
-  if (missingStars.length > 0) {
-    msgDiv.innerHTML = "";
-    return alert("Merci d'attribuer au moins une étoile dans chaque famille.");
-  }
-  const totalStars = families.reduce((sum, f) => sum + f.stars, 0);
-  const avgStars = (totalStars / families.length).toFixed(0);
-  msgDiv.innerHTML = `Merci pour votre participation !<br>
+      } catch (err) {
+        console.error("❌ Erreur réseau :", err.message);
+      }
+    }
+    function editCriteria(index) {
+      const key = selectedCriteria[index];
+      const [family, sub] = key.split(" - ");
+      const newSub = prompt(`Modifier sous-famille pour ${family}:`, sub);
+      if (newSub && newSub !== sub) {
+        selectedCriteria[index] = family + " - " + newSub;
+        updateSelectedList();
+        const numero = document.getElementById("numeroInput").value.trim();
+        const type = document.getElementById("typeSelect").value;
+        fetch(URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "edit",
+            type: type,
+            numero: numero,
+            famille: family,
+            oldSub: sub,
+            newSub: newSub
+          })
+        }).then(res => res.json())
+          .then(result => {
+            if (result.result === "ok") console.log("✅ Critère modifié");
+            else console.error("⚠️ Erreur serveur :", result.error);
+          }).catch(err => console.error("❌ Erreur réseau :", err.message));
+      }
+    }
+    renderFamilies();
+  </script>
+  <button id="submitBtn">Soumettre</button>
+  <button class="btn" onclick="window.open('https://nonodev38.github.io/liste_mobil_home/', 'listeMobilHomeWindow')">
+    Ouvrir Liste MobilHome
+  </button>
+  <div id="thankYouMessage" style="margin-top: 20px; font-weight: bold;"></div>
+  <script>
+    document.getElementById("submitBtn").onclick = () => {
+      const numero = document.getElementById("numeroInput").value.trim();
+      const msgDiv = document.getElementById("thankYouMessage");
+      const type = document.getElementById("typeSelect").value;
+      if (!numero) {
+        msgDiv.innerHTML = "";
+        return alert("Merci de renseigner le numéro.");
+      }
+      if (selectedCriteria.length === 0) {
+        msgDiv.innerHTML = "";
+        return alert("Merci de sélectionner au moins un critère.");
+      }
+      const missingStars = families.filter(f => f.stars === 0);
+      if (missingStars.length > 0) {
+        msgDiv.innerHTML = "";
+        return alert("Merci d'attribuer au moins une étoile dans chaque famille.");
+      }
+      const totalStars = families.reduce((sum, f) => sum + f.stars, 0);
+      const avgStars = (totalStars / families.length).toFixed(0);
+      msgDiv.innerHTML = `Merci pour votre participation !<br>
     <span style="color:gold;">
       Type : ${type} | Numéro : ${numero} | Moyenne des étoiles : ${avgStars} ⭐
     </span>`;
-
-  // Envoi uniquement la moyenne au serveur
-  fetch(URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      action: "edit",
-      type: type,
-      numero: numero,
-      famille: "MOYENNE",
-      avgStars: avgStars
-    })
-  });
-
-  // Reset des variables et du formulaire
-  document.getElementById("submitBtn").disabled = false;
-  document.getElementById("numeroInput").value = "";
-  document.getElementById("typeSelect").selectedIndex = 0;
-  selectedCriteria = [];
-  families.forEach(f => f.stars = 0);
-  updateSelectedList();
-  renderFamilies();
-};
-
-// Réactive le bouton si une étoile, un numéro ou une sous-famille est cliquée
-document.getElementById("numeroInput").addEventListener("input", () => {
-  document.getElementById("submitBtn").disabled = false;
-});
-
-function setStars(familyIndex, starCount) {
-  families[familyIndex].stars = starCount;
-  renderFamilies();
-  document.getElementById("submitBtn").disabled = false;
-}
-
-async function addCriteria(family, sub) {
-  const key = family + " - " + sub;
-  if (!selectedCriteria.includes(key)) {
-    selectedCriteria.push(key);
-    updateSelectedList();
-
-    document.getElementById("submitBtn").disabled = false;
-
-    const type = document.getElementById("typeSelect").value;
-    const numero = document.getElementById("numeroInput").value.trim();
-    if (!numero) return alert("Merci de renseigner le numéro.");
-
-    try {
-      const res = await fetch(URL, {
+      fetch(URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
-          action: "add",
+          action: "edit",
           type: type,
           numero: numero,
-          famille: family,
-          sousfamille: sub
+          famille: "MOYENNE",
+          avgStars: avgStars
         })
       });
-      const result = await res.json();
-      if (result.result === "ok") console.log("✅ Critère enregistré");
-      else console.error("⚠️ Erreur serveur :", result.error);
-    } catch (err) {
-      console.error("❌ Erreur réseau :", err.message);
+      document.getElementById("submitBtn").disabled = false;
+      document.getElementById("numeroInput").value = "";
+      document.getElementById("typeSelect").selectedIndex = 0;
+      selectedCriteria = [];
+      families.forEach(f => f.stars = 0);
+      updateSelectedList();
+      renderFamilies();
+    };
+    document.getElementById("numeroInput").addEventListener("input", () => {
+      document.getElementById("submitBtn").disabled = false;
+    });
+    function setStars(familyIndex, starCount) {
+      families[familyIndex].stars = starCount;
+      renderFamilies();
+      document.getElementById("submitBtn").disabled = false;
     }
-  }
-}
-
-// Réaffiche le bouton si une étoile, un numéro ou une sous-famille est cliquée
-document.getElementById("numeroInput").addEventListener("input", () => {
-  document.getElementById("submitBtn").style.display = "block";
-});
-
-function setStars(familyIndex, starCount) {
-  families[familyIndex].stars = starCount;
-  renderFamilies();
-  document.getElementById("submitBtn").style.display = "block";
-}
-
-async function addCriteria(family, sub) {
-  const key = family + " - " + sub;
-  if (!selectedCriteria.includes(key)) {
-    selectedCriteria.push(key);
-    updateSelectedList();
-
-    document.getElementById("submitBtn").style.display = "block";
-
-    const type = document.getElementById("typeSelect").value;
-    const numero = document.getElementById("numeroInput").value.trim();
-    if (!numero) return alert("Merci de renseigner le numéro.");
-
-    try {
-      const res = await fetch(URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          action: "add",
-          type: type,
-          numero: numero,
-          famille: family,
-          sousfamille: sub
-        })
-      });
-      const result = await res.json();
-      if (result.result === "ok") console.log("✅ Critère enregistré");
-      else console.error("⚠️ Erreur serveur :", result.error);
-    } catch (err) {
-      console.error("❌ Erreur réseau :", err.message);
+    async function addCriteria(family, sub) {
+      const key = family + " - " + sub;
+      if (!selectedCriteria.includes(key)) {
+        selectedCriteria.push(key);
+        updateSelectedList();
+        document.getElementById("submitBtn").disabled = false;
+        const type = document.getElementById("typeSelect").value;
+        const numero = document.getElementById("numeroInput").value.trim();
+        if (!numero) return alert("Merci de renseigner le numéro.");
+        try {
+          const res = await fetch(URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "add",
+              type: type,
+              numero: numero,
+              famille: family,
+              sousfamille: sub
+            })
+          });
+          const result = await res.json();
+          if (result.result === "ok") console.log("✅ Critère enregistré");
+          else console.error("⚠️ Erreur serveur :", result.error);
+        } catch (err) {
+          console.error("❌ Erreur réseau :", err.message);
+        }
+      }
     }
-  }
-}
-</script>
+    document.getElementById("numeroInput").addEventListener("input", () => {
+      document.getElementById("submitBtn").style.display = "block";
+    });
+    function setStars(familyIndex, starCount) {
+      families[familyIndex].stars = starCount;
+      renderFamilies();
+      document.getElementById("submitBtn").style.display = "block";
+    }
+    async function addCriteria(family, sub) {
+      const key = family + " - " + sub;
+      if (!selectedCriteria.includes(key)) {
+        selectedCriteria.push(key);
+        updateSelectedList();
+        document.getElementById("submitBtn").style.display = "block";
+        const type = document.getElementById("typeSelect").value;
+        const numero = document.getElementById("numeroInput").value.trim();
+        if (!numero) return alert("Merci de renseigner le numéro.");
+        try {
+          const res = await fetch(URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "add",
+              type: type,
+              numero: numero,
+              famille: family,
+              sousfamille: sub
+            })
+          });
+          const result = await res.json();
+          if (result.result === "ok") console.log("✅ Critère enregistré");
+          else console.error("⚠️ Erreur serveur :", result.error);
+        } catch (err) {
+          console.error("❌ Erreur réseau :", err.message);
+        }
+      }
+    }
+  </script>
 </body>
+
 </html>
