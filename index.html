@@ -32,6 +32,32 @@
       text-align: left;
     }
 
+        .arrow {
+      font-size: 1.2em;
+      color: #1976d2;
+      cursor: pointer;
+      user-select: none;
+      margin-right: 4px;
+    }
+
+    /* Familles : gras, police plus grande et moderne */
+    tr.family td {
+      font-weight: bold;
+      font-size: 1.18em;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #222;
+    }
+
+    /* Sous-familles : police différente, plus petite, décalée */
+    tr.subfamily td {
+      font-weight: normal;
+      font-size: 1em;
+      font-family: 'Roboto', Arial, sans-serif;
+      padding-left: 32px;
+      color: #444;
+      letter-spacing: 0.5px;
+    }
+
     tr.family {
       cursor: pointer;
       background: #f0f0f0;
@@ -109,21 +135,53 @@
     .btn:hover {
       background: #45a049;
     }
+
+    /* Ajout pour la zone de saisie type/numéro */
+    .input-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      background: #f7fafd;
+      border: 1px solid #b3d1ff;
+      border-radius: 8px;
+      padding: 18px 24px;
+      margin: 0 auto 18px auto;
+      box-shadow: 0 2px 8px #b3d1ff33;
+      max-width: 680px;
+    }
+
+    .input-container label {
+      font-weight: bold;
+      color: #1976d2;
+      margin-right: 6px;
+    }
+
+    .input-container select,
+    .input-container input {
+      padding: 8px 12px;
+      border-radius: 5px;
+      border: 1px solid #b3d1ff;
+      font-size: 1em;
+    }
   </style>
 </head>
 
 <body>
   <h1>Check Mobil-Home</h1>
-  <label for="typeSelect">Type :</label>
-  <select id="typeSelect">
-    <option value="MH">MH</option>
-    <option value="CH">CH</option>
-  </select>
-  <label for="numeroInput">Numéro :</label>
-  <input type="text" id="numeroInput">
+  <div class="input-container">
+    <label for="typeSelect">Type :</label>
+    <select id="typeSelect">
+      <option value="MH">MH</option>
+      <option value="CH">CH</option>
+    </select>
+    <label for="numeroInput">Numéro :</label>
+    <input type="text" id="numeroInput">
+  </div>
   <table id="criteriaTable">
     <thead>
       <tr>
+        <th></th>
         <th>Famille</th>
         <th>État Général</th>
       </tr>
@@ -136,51 +194,106 @@
     <h3>Critères sélectionnés :</h3>
     <ul id="selectedList"></ul>
   </div>
+  <button id="submitBtn">Soumettre</button>
+
+  <div id="thankYouMessage" style="margin-top: 20px; font-weight: bold;"></div>
   <script>
-    const URL = "https://script.google.com/macros/s/AKfycbzo8UtXs31KSDYJruqOzV1NPd2wwrW5Kw7Wmj8-HJmGin93IpmnEjufB7F48EnGoX-A/exec";
-    const families = [
-      { name: "Terrasse", subs: ["Aucun Problème", "Escaliers HS", "Remplacer Structure", "Remplacer Lames", "Poncer et proteger", "Etat général trop ancien"], stars: 0 },
-      { name: "Menuiseries", subs: ["Aucun Problème", "Porte Entree Frotte", "Porte Entree HS", "Fenêtres Bloquée Ch", "Fenêtres Bloquée Sdb", "Fenêtres Blo partagé cuisine", "Fenêtres Bloquée salon", "Etat général trop ancien"], stars: 0 },
-      { name: "Plomberie", subs: ["Aucun Problème", "Fuite SDB", "Fuite Cuisine", "Probleme différence de T° de l'eau SDB", "Douche déteriorée", "Joints cuisine HS", "Joints SDB HS", "Etat général trop ancien"], stars: 0 },
-      { name: "Electricité", subs: ["Aucun Problème", "Eclairage trop faible", "Manque de prises", "Etat général trop ancien"], stars: 0 },
-      { name: "Piscine", subs: ["Précisez"], stars: 0 }
-    ];
+    const URL = "https://script.google.com/macros/s/AKfycbz7J7fOqS9I0r8BrX8Jv7EasTrbQ_M969qixrNZzNi3Z59lGdhV20rtkXxD_0NaEhwX/exec";
+    let families = [];
     let selectedCriteria = [];
+
+    async function fetchFamilies() {
+      try {
+        const res = await fetch(URL + "?action=getFamilies");
+        const data = await res.json();
+        families = data.map(f => ({ ...f, stars: 0 }));
+        renderFamilies();
+      } catch (err) {
+        alert("Impossible de charger les familles.");
+        families = [
+          { name: "Terrasse", subs: ["Aucun Problème", "Escaliers HS", "Remplacer Structure", "Remplacer Lames", "Poncer et proteger", "Etat général trop ancien"], stars: 0 },
+          { name: "Menuiseries", subs: ["Aucun Problème", "Porte Entree Frotte", "Porte Entree HS", "Fenêtres Bloquée Ch", "Fenêtres Bloquée Sdb", "Fenêtres Blo partagé cuisine", "Fenêtres Bloquée salon", "Etat général trop ancien"], stars: 0 },
+          { name: "Plomberie", subs: ["Aucun Problème", "Fuite SDB", "Fuite Cuisine", "Probleme différence de T° de l'eau SDB", "Douche déteriorée", "Joints cuisine HS", "Joints SDB HS", "Etat général trop ancien"], stars: 0 },
+          { name: "Electricité", subs: ["Aucun Problème", "Eclairage trop faible", "Manque de prises", "Etat général trop ancien"], stars: 0 },
+          { name: "Piscine", subs: ["Précisez"], stars: 0 },
+          { name: "Rien à signaler dans l'ensemble", subs: ["Rien à signaler pour ce mobilhome"], stars: 0 } // <-- Ajouté ici
+        ];
+        renderFamilies();
+      }
+    }
+
     function renderFamilies() {
       const tbody = document.querySelector("#criteriaTable tbody");
       tbody.innerHTML = "";
-      families.forEach((family, i) => {
-        const tr = document.createElement("tr");
-        tr.classList.add("family");
-        tr.dataset.index = i;
-        const starsHtml = Array.from({ length: 5 }, (_, idx) =>
-          `<span class="star ${idx < family.stars ? 'active' : ''}" data-star="${idx + 1}">&#9733;</span>`
-        ).join("");
-        tr.innerHTML = `<td>${family.name}</td><td class="stars">${starsHtml}</td>`;
-        tr.querySelectorAll(".star").forEach(starEl => {
-          starEl.onclick = (e) => {
-            e.stopPropagation();
-            const numero = document.getElementById("numeroInput").value.trim();
-            if (!numero) {
-              alert("Merci de renseigner le numéro.");
-              return;
-            }
-            setStars(i, parseInt(starEl.dataset.star));
-            document.getElementById("submitBtn").style.display = "block";
-          };
-        });
-        tr.onclick = () => toggleSubFamilies(tr, family);
-        tbody.appendChild(tr);
+families.forEach((family, realIndex) => {
+  if (family.name === "MOYENNE") return; // Ne pas afficher la ligne
+  const tr = document.createElement("tr");
+  tr.classList.add("family");
+  tr.dataset.index = realIndex;
+
+  // Ne pas afficher les étoiles pour "Rien à signaler dans l'ensemble"
+  let starsHtml = "";
+  if (family.name !== "Rien à signaler dans l'ensemble") {
+    starsHtml = Array.from({ length: 5 }, (_, idx) =>
+      `<span class="star ${idx < family.stars ? 'active' : ''}" data-star="${idx + 1}">&#9733;</span>`
+    ).join("");
+  }
+
+  tr.innerHTML = `<td style="width:32px;text-align:center;">${family.name !== "Rien à signaler dans l'ensemble" ? '<span class="arrow">&#9660;</span>' : ''}</td><td>${family.name}</td><td class="stars">${starsHtml}</td>`;
+// ...existing code...
+
+  if (family.name !== "Rien à signaler dans l'ensemble") {
+    tr.querySelectorAll(".star").forEach(starEl => {
+      starEl.onclick = (e) => {
+        e.stopPropagation();
+        const numero = document.getElementById("numeroInput").value.trim();
+        if (!numero) {
+          alert("Merci de renseigner le numéro.");
+          document.getElementById("numeroInput").focus();
+          return;
+        }
+        setStars(realIndex, parseInt(starEl.dataset.star));
+        document.getElementById("submitBtn").disabled = false;
+      };
+    });
+    tr.onclick = () => toggleSubFamilies(tr, family);
+  } else {
+    // Traitement spécial pour "Rien à signaler dans l'ensemble"
+    tr.onclick = () => {
+      const numero = document.getElementById("numeroInput").value.trim();
+      if (!numero) {
+        alert("Merci de renseigner le numéro.");
+        document.getElementById("numeroInput").focus();
+        return;
+      }
+      families.forEach(f => {
+        if (f.name !== "MOYENNE") {
+          f.stars = 4;
+        }
       });
+      const key = family.name + " - Rien à signaler pour ce mobilhome";
+      if (!selectedCriteria.includes(key)) {
+        addCriteria(family.name, "Rien à signaler pour ce mobilhome");
+      }
+      renderFamilies();
+      document.getElementById("submitBtn").disabled = false;
+    };
+  }
+
+  tbody.appendChild(tr);
+});
     }
+
     function setStars(familyIndex, starCount) {
       families[familyIndex].stars = starCount;
       renderFamilies();
     }
+
     function toggleSubFamilies(tr, family) {
       const numero = document.getElementById("numeroInput").value.trim();
       if (!numero) {
         alert("Merci de renseigner le numéro.");
+        document.getElementById("numeroInput").focus();
         return;
       }
       let next = tr.nextSibling;
@@ -194,7 +307,16 @@
       }
       document.querySelectorAll("tr.subfamily").forEach(s => s.remove());
       let lastTr = tr;
-      family.subs.forEach(sub => {
+
+      // Nouvelle logique : "Aucun Problème" toujours en haut
+      let subs = [...family.subs];
+      const indexAucun = subs.indexOf("Aucun Problème");
+      if (indexAucun > -1) {
+        subs.splice(indexAucun, 1);
+        subs.unshift("Aucun Problème");
+      }
+
+      subs.forEach(sub => {
         const subTr = document.createElement("tr");
         subTr.classList.add("subfamily");
         if (selectedCriteria.includes(family.name + " - " + sub)) {
@@ -205,10 +327,12 @@
           e.stopPropagation();
           addCriteria(family.name, sub);
           subTr.classList.add("selected");
+          document.getElementById("submitBtn").disabled = false;
         };
         lastTr.after(subTr);
         lastTr = subTr;
       });
+      // ...reste inchangé...
       const customTr = document.createElement("tr");
       customTr.classList.add("subfamily");
       customTr.innerHTML = `<td colspan="2">
@@ -224,10 +348,16 @@
           return;
         }
         addCriteria(family.name, value);
+        if (!family.subs.includes(value)) {
+          family.subs.push(value);
+          renderFamilies();
+        }
         customTr.classList.add("selected");
+        document.getElementById("submitBtn").disabled = false;
       };
       lastTr.after(customTr);
     }
+
     async function addCriteria(family, sub) {
       const key = family + " - " + sub;
       if (!selectedCriteria.includes(key)) {
@@ -236,6 +366,7 @@
         const type = document.getElementById("typeSelect").value;
         const numero = document.getElementById("numeroInput").value.trim();
         if (!numero) return alert("Merci de renseigner le numéro.");
+        document.getElementById("numeroInput").focus();
         try {
           const res = await fetch(URL, {
             method: "POST",
@@ -256,6 +387,7 @@
         }
       }
     }
+
     function updateSelectedList() {
       const ul = document.getElementById("selectedList");
       ul.innerHTML = "";
@@ -275,6 +407,7 @@
         ul.appendChild(li);
       });
     }
+
     async function deleteCriteria(index) {
       const key = selectedCriteria[index];
       const [family, sub] = key.split(" - ");
@@ -301,6 +434,7 @@
         console.error("❌ Erreur réseau :", err.message);
       }
     }
+
     function editCriteria(index) {
       const key = selectedCriteria[index];
       const [family, sub] = key.split(" - ");
@@ -328,48 +462,57 @@
           }).catch(err => console.error("❌ Erreur réseau :", err.message));
       }
     }
-    renderFamilies();
-  </script>
-  <button id="submitBtn">Soumettre</button>
-  <button class="btn" onclick="window.open('https://nonodev38.github.io/liste_mobil_home/', 'listeMobilHomeWindow')">
-    Ouvrir Liste MobilHome
-  </button>
-  <div id="thankYouMessage" style="margin-top: 20px; font-weight: bold;"></div>
-  <script>
+
+    // Initialisation dynamique
+    fetchFamilies();
+    document.getElementById("numeroInput").focus();
+
     document.getElementById("submitBtn").onclick = () => {
       const numero = document.getElementById("numeroInput").value.trim();
       const msgDiv = document.getElementById("thankYouMessage");
       const type = document.getElementById("typeSelect").value;
+
       if (!numero) {
         msgDiv.innerHTML = "";
-        return alert("Merci de renseigner le numéro.");
+        alert("Merci de renseigner le numéro.");
+        document.getElementById("numeroInput").focus();
+        return;
       }
       if (selectedCriteria.length === 0) {
         msgDiv.innerHTML = "";
-        return alert("Merci de sélectionner au moins un critère.");
+        alert("Merci de sélectionner au moins un critère.");
+        document.getElementById("numeroInput").focus();   
+        return;
       }
-      const missingStars = families.filter(f => f.stars === 0);
-      if (missingStars.length > 0) {
-        msgDiv.innerHTML = "";
-        return alert("Merci d'attribuer au moins une étoile dans chaque famille.");
-      }
-      const totalStars = families.reduce((sum, f) => sum + f.stars, 0);
-      const avgStars = (totalStars / families.length).toFixed(0);
+
+      const nbFamillesAvecEtoiles = families.filter(f => f.name !== "Rien à signaler dans l'ensemble").length - 1;
+      //alert("Nombre de familles avec étoiles : " + nbFamillesAvecEtoiles);
+     // Ne compte pas les étoiles de "Rien à signaler dans l'ensemble"
+      const totalStars = families
+        .filter(f => f.name !== "Rien à signaler dans l'ensemble")
+        .reduce((sum, f) => sum + f.stars, 0);
+        //alert("Total des étoiles : " + totalStars); // <-- Ajout ici
+
+      const avgStars = (totalStars / nbFamillesAvecEtoiles).toFixed(0);
+      //alert("avgStars des étoiles : " + avgStars); // <-- Ajout ici
+      //alert("families.length des étoiles : " + nbFamillesAvecEtoiles); // <-- Ajout ici
       msgDiv.innerHTML = `Merci pour votre participation !<br>
-    <span style="color:gold;">
-      Type : ${type} | Numéro : ${numero} | Moyenne des étoiles : ${avgStars} ⭐
-    </span>`;
+        <span style="color:gold;">
+          Type : ${type} | Numéro : ${numero} | Moyenne des étoiles : ${avgStars} ⭐
+        </span>`;
+
       fetch(URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
-          action: "edit",
+          action: "add",
           type: type,
           numero: numero,
           famille: "MOYENNE",
           avgStars: avgStars
         })
       });
+
       document.getElementById("submitBtn").disabled = false;
       document.getElementById("numeroInput").value = "";
       document.getElementById("typeSelect").selectedIndex = 0;
@@ -377,81 +520,12 @@
       families.forEach(f => f.stars = 0);
       updateSelectedList();
       renderFamilies();
+      document.getElementById("numeroInput").focus();
     };
+
     document.getElementById("numeroInput").addEventListener("input", () => {
       document.getElementById("submitBtn").disabled = false;
     });
-    function setStars(familyIndex, starCount) {
-      families[familyIndex].stars = starCount;
-      renderFamilies();
-      document.getElementById("submitBtn").disabled = false;
-    }
-    async function addCriteria(family, sub) {
-      const key = family + " - " + sub;
-      if (!selectedCriteria.includes(key)) {
-        selectedCriteria.push(key);
-        updateSelectedList();
-        document.getElementById("submitBtn").disabled = false;
-        const type = document.getElementById("typeSelect").value;
-        const numero = document.getElementById("numeroInput").value.trim();
-        if (!numero) return alert("Merci de renseigner le numéro.");
-        try {
-          const res = await fetch(URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              action: "add",
-              type: type,
-              numero: numero,
-              famille: family,
-              sousfamille: sub
-            })
-          });
-          const result = await res.json();
-          if (result.result === "ok") console.log("✅ Critère enregistré");
-          else console.error("⚠️ Erreur serveur :", result.error);
-        } catch (err) {
-          console.error("❌ Erreur réseau :", err.message);
-        }
-      }
-    }
-    document.getElementById("numeroInput").addEventListener("input", () => {
-      document.getElementById("submitBtn").style.display = "block";
-    });
-    function setStars(familyIndex, starCount) {
-      families[familyIndex].stars = starCount;
-      renderFamilies();
-      document.getElementById("submitBtn").style.display = "block";
-    }
-    async function addCriteria(family, sub) {
-      const key = family + " - " + sub;
-      if (!selectedCriteria.includes(key)) {
-        selectedCriteria.push(key);
-        updateSelectedList();
-        document.getElementById("submitBtn").style.display = "block";
-        const type = document.getElementById("typeSelect").value;
-        const numero = document.getElementById("numeroInput").value.trim();
-        if (!numero) return alert("Merci de renseigner le numéro.");
-        try {
-          const res = await fetch(URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              action: "add",
-              type: type,
-              numero: numero,
-              famille: family,
-              sousfamille: sub
-            })
-          });
-          const result = await res.json();
-          if (result.result === "ok") console.log("✅ Critère enregistré");
-          else console.error("⚠️ Erreur serveur :", result.error);
-        } catch (err) {
-          console.error("❌ Erreur réseau :", err.message);
-        }
-      }
-    }
   </script>
 </body>
 
