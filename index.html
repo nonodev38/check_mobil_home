@@ -164,10 +164,31 @@
       border: 1px solid #b3d1ff;
       font-size: 1em;
     }
+
+  .spinner {
+  width: 48px;
+  height: 48px;
+  border: 6px solid #b3d1ff;
+  border-top: 6px solid #1976d2;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg);}
+  100% { transform: rotate(360deg);}
+}
   </style>
 </head>
 
 <body>
+  <div id="loader" style="display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#fff;z-index:9999;">
+  <div style="text-align:center;">
+    <div class="spinner"></div>
+    <div style="margin-top:18px;color:#1976d2;font-weight:bold;">Chargement...</div>
+  </div>
+</div>
+
   <h1>Check Mobil-Home</h1>
   <div class="input-container">
     <label for="typeSelect">Type :</label>
@@ -220,6 +241,7 @@
         ];
         renderFamilies();
       }
+        document.getElementById("loader").style.display = "none"; // Cache le loader
     }
 
     function renderFamilies() {
@@ -524,7 +546,7 @@ families.forEach((family, realIndex) => {
     };
 
     document.getElementById("numeroInput").addEventListener("input", () => {
-      document.getElementById("submitBtn").disabled = false;
+    document.getElementById("submitBtn").disabled = false;
     });
   </script>
 </body>
