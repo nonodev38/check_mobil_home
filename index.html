@@ -312,8 +312,8 @@ body.mobile-mode .btn {
 
   <h1>Check Mobil-Home</h1>
 
-  <button id="toggleMobileBtn" class="btn mode-btn">Afficher Le Mode Mobile</button>  
-  
+  <!--<button id="toggleMobileBtn" class="btn mode-btn">Afficher Le Mode Mobile</button>-->
+
   <!-- Zone de saisie du type et du numéro du mobil-home -->
   <div class="input-container">
     <label for="typeSelect">Type :</label>
@@ -383,6 +383,23 @@ body.mobile-mode .btn {
       }
       document.getElementById("loader").style.display = "none"; // Cache le loader
     }
+
+    // Détection automatique du mode mobile
+if (window.matchMedia("(max-width: 900px), (pointer: coarse)").matches) {
+  document.body.classList.add("mobile-mode");
+} else {
+  document.body.classList.remove("mobile-mode");
+}
+
+// Optionnel : adapte le mode si la fenêtre est redimensionnée
+window.addEventListener("resize", function() {
+  if (window.matchMedia("(max-width: 900px), (pointer: coarse)").matches) {
+    document.body.classList.add("mobile-mode");
+  } else {
+    document.body.classList.remove("mobile-mode");
+  }
+});
+
 
     /**
      * Affiche dynamiquement le tableau des familles et sous-familles.
