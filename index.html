@@ -311,74 +311,115 @@ families.forEach((family, realIndex) => {
       renderFamilies();
     }
 
-    function toggleSubFamilies(tr, family) {
-      const numero = document.getElementById("numeroInput").value.trim();
-      if (!numero) {
-        alert("Merci de renseigner le numéro.");
-        document.getElementById("numeroInput").focus();
-        return;
-      }
-      let next = tr.nextSibling;
-      if (next && next.classList && next.classList.contains("subfamily")) {
-        while (next && next.classList && next.classList.contains("subfamily")) {
-          let toRemove = next;
-          next = next.nextSibling;
-          toRemove.remove();
-        }
-        return;
-      }
-      document.querySelectorAll("tr.subfamily").forEach(s => s.remove());
-      let lastTr = tr;
-
-      // Nouvelle logique : "Aucun Problème" toujours en haut
-      let subs = [...family.subs];
-      const indexAucun = subs.indexOf("Aucun Problème");
-      if (indexAucun > -1) {
-        subs.splice(indexAucun, 1);
-        subs.unshift("Aucun Problème");
-      }
-
-      subs.forEach(sub => {
-        const subTr = document.createElement("tr");
-        subTr.classList.add("subfamily");
-        if (selectedCriteria.includes(family.name + " - " + sub)) {
-          subTr.classList.add("selected");
-        }
-        subTr.innerHTML = `<td colspan="2">${sub}</td>`;
-        subTr.onclick = (e) => {
-          e.stopPropagation();
-          addCriteria(family.name, sub);
-          subTr.classList.add("selected");
-          document.getElementById("submitBtn").disabled = false;
-        };
-        lastTr.after(subTr);
-        lastTr = subTr;
-      });
-      // ...reste inchangé...
-      const customTr = document.createElement("tr");
-      customTr.classList.add("subfamily");
-      customTr.innerHTML = `<td colspan="2">
-    <label for="customInput_${family.name}">Autre Précisez :</label>
-    <input type="text" id="customInput_${family.name}" placeholder="Votre précision..." style="width:60%;">
-    <button id="addCustomBtn_${family.name}" style="margin-left:10px;">Ajouter</button>
-  </td>`;
-      customTr.querySelector(`#addCustomBtn_${family.name}`).onclick = (e) => {
-        e.stopPropagation();
-        const value = customTr.querySelector(`#customInput_${family.name}`).value.trim();
-        if (!value) {
-          alert("Merci de préciser votre remarque.");
-          return;
-        }
-        addCriteria(family.name, value);
-        if (!family.subs.includes(value)) {
-          family.subs.push(value);
-          renderFamilies();
-        }
-        customTr.classList.add("selected");
-        document.getElementById("submitBtn").disabled = false;
-      };
-      lastTr.after(customTr);
+function toggleSubFamilies(tr, family) {
+  const numero = document.getElementById("numeroInput").value.trim();
+  if (!numero) {
+    alert("Merci de renseigner le numéro.");
+    document.getElementById("numeroInput").focus();
+    return;
+  }
+  let next = tr.nextSibling;
+  if (next && next.classList && next.classList.contains("subfamily")) {
+    while (next && next.classList && next.classList.contains("subfamily")) {
+      let toRemove = next;
+      next = next.nextSibling;
+      toRemove.remove();
     }
+    return;
+  }
+  document.querySelectorAll("tr.subfamily").forEach(s => s.remove());
+  let lastTr = tr;
+
+  // Nouvelle logique : "Aucun Problème" toujours en haut
+  let subs = [...family.subs];
+  const indexAucun = subs.indexOf("Aucun Problème");
+  if (indexAucun > -1) {
+    subs.splice(indexAucun, 1);
+    // Trie le reste des sous-familles
+    subs.sort((a, b) => a.localeCompare(b));
+    subs.unshift("Aucun Problème");
+  } else {
+    subs.sort((a, b) => a.localeCompare(b));
+  }
+  subs.forEach(sub => {
+    const subTr = document.createElement("tr");
+    subTr.classList.add("subfamily");
+    if (selectedCriteria.includes(family.name + " - " + sub)) {
+      subTr.classList.add("selected");
+    }
+    // Met la première lettre en majuscule
+    const subDisplay = sub.charAt(0).toUpperCase() + sub.slice(1);
+    subTr.innerHTML = `<td colspan="2">${subDisplay}</td>`;
+    subTr.onclick = (e) => {
+      e.stopPropagation();
+      addCriteria(family.name, sub);
+      subTr.classList.add("selected");
+      document.getElementById("submitBtn").disabled = false;
+    };
+    lastTr.after(subTr);
+    lastTr = subTr;
+  });
+  // ...reste inchangé...
+const customTr = document.createElement("tr");
+customTr.classList.add("subfamily");
+customTr.innerHTML = `<td colspan="2">
+  <label for="customInput_${family.name}">Autre Précisez :</label>
+  <input type="text" id="customInput_${family.name}" placeholder="Votre précision..." style="width:60%;">
+  <div id="suggestions_${family.name}" style="background:#fff;border:1px solid #b3d1ff;border-radius:4px;max-height:120px;overflow-y:auto;position:absolute;z-index:10;display:none;"></div>
+  <button id="addCustomBtn_${family.name}" style="margin-left:10px;">Ajouter</button>
+</td>`;
+const input = customTr.querySelector(`#customInput_${family.name}`);
+const suggestionsDiv = customTr.querySelector(`#suggestions_${family.name}`);
+
+// Positionne le suggestionsDiv correctement
+customTr.style.position = "relative";
+input.addEventListener("input", function() {
+  const val = this.value.trim().toLowerCase();
+  if (!val) {
+    suggestionsDiv.style.display = "none";
+    return;
+  }
+  // Filtre les sous-familles existantes
+  const filtered = family.subs.filter(sub => sub.toLowerCase().includes(val));
+  if (filtered.length === 0) {
+    suggestionsDiv.style.display = "none";
+    return;
+  }
+  suggestionsDiv.innerHTML = filtered.map(sub =>
+    `<div style="padding:6px;cursor:pointer;">${sub}</div>`
+  ).join("");
+  suggestionsDiv.style.display = "block";
+  // Ajoute le clic sur chaque suggestion
+  Array.from(suggestionsDiv.children).forEach(child => {
+    child.onclick = () => {
+      input.value = child.textContent;
+      suggestionsDiv.style.display = "none";
+    };
+  });
+});
+
+// Masque les suggestions si on quitte le champ
+input.addEventListener("blur", function() {
+  setTimeout(() => { suggestionsDiv.style.display = "none"; }, 150);
+});
+
+customTr.querySelector(`#addCustomBtn_${family.name}`).onclick = (e) => {
+  e.stopPropagation();
+  const value = input.value.trim();
+  if (!value) {
+    alert("Merci de préciser votre remarque.");
+    return;
+  }
+  addCriteria(family.name, value);
+  if (!family.subs.includes(value)) {
+    family.subs.push(value);
+    renderFamilies();
+  }
+  customTr.classList.add("selected");
+  document.getElementById("submitBtn").disabled = false;
+};
+lastTr.after(customTr);
+}
 
     async function addCriteria(family, sub) {
       const key = family + " - " + sub;
