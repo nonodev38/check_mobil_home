@@ -32,7 +32,7 @@
       text-align: left;
     }
 
-        .arrow {
+    .arrow {
       font-size: 1.2em;
       color: #1976d2;
       cursor: pointer;
@@ -73,11 +73,10 @@
       padding: 10px;
     }
 
-    .stars {
-      cursor: pointer;
+    .stars span {
       color: lightgray;
+      font-size: 2em; /* ou la taille souhaitée */
     }
-
     .stars .active {
       color: gold;
     }
@@ -165,31 +164,128 @@
       font-size: 1em;
     }
 
-  .spinner {
-  width: 48px;
-  height: 48px;
-  border: 6px solid #b3d1ff;
-  border-top: 6px solid #1976d2;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto;
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 6px solid #b3d1ff;
+      border-top: 6px solid #1976d2;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    .signal-btn-row .signal-btn-cell.selected {
+      background: #1976d2; /* Couleur différente pour l'état sélectionné */
+      color: #fff;
+    }
+    .signal-btn-row .signal-btn-cell {
+      transition: background 0.2s, color 0.2s;
+    }
+    .signal-btn-row .signal-btn-cell {
+      margin-top: 18px; /* Espace au-dessus du bouton */
+      background: #82b0df;
+      color: #fff;
+      font-weight: bold;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 1.15em;
+      cursor: pointer;
+      box-shadow: 0 2px 8px #5a9cdf33;
+      transition: background 0.2s;
+      width: 100%;
+      padding: 18px 0;
+      border: none;
+    }
+    .signal-btn-row:hover .signal-btn-cell {
+      background: #1565c0;
+    }
+
+    .mode-btn {
+  background: #1976d2;
+  color: #fff;
+  margin: 0 auto 18px auto;
+  display: block;
+  padding: 14px 36px;
+  font-size: 1.2em;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 2px 8px #1976d233;
+  transition: background 0.2s;
 }
-@keyframes spin {
-  0% { transform: rotate(0deg);}
-  100% { transform: rotate(360deg);}
+.mode-btn:hover {
+  background: #1565c0;
 }
+
+    /* Mode mobile : s'active si le body a la classe .mobile-mode */
+    body.mobile-mode .input-container,
+    body.mobile-mode .selected-criteria,
+    body.mobile-mode table {
+      margin-left: auto !important;
+      margin-right: auto !important;
+      text-align: center !important;
+    }
+    body.mobile-mode .selected-criteria ul {
+      display: inline-block;
+      text-align: left;
+    }
+body.mobile-mode #criteriaTable {
+  width: 25vw !important;
+  min-width: 660px;
+  max-width: 860px;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  text-align: center !important;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px #b3d1ff33;
+}
+    body.mobile-mode #criteriaTable th,
+    body.mobile-mode #criteriaTable td {
+      text-align: center !important;
+    }
+
+
+    body.mobile-mode h1 {
+      font-size: 1.3em !important;
+    }
+
+    body.mobile-mode .stars span {
+      font-size: 2.5em !important;
+    }
+
+    body.mobile-mode .signal-btn-row .signal-btn-cell {
+      font-size: 1.2em !important;
+      padding: 24px 0 !important;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 
 <body>
-  <div id="loader" style="display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#fff;z-index:9999;">
-  <div style="text-align:center;">
-    <div class="spinner"></div>
-    <div style="margin-top:18px;color:#1976d2;font-weight:bold;">Chargement...</div>
+  <!-- Loader affiché pendant le chargement des familles -->
+  <div id="loader"
+    style="display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#fff;z-index:9999;">
+    <div style="text-align:center;">
+      <div class="spinner"></div>
+      <div style="margin-top:18px;color:#1976d2;font-weight:bold;">Chargement...</div>
+    </div>
   </div>
-</div>
 
   <h1>Check Mobil-Home</h1>
+
+  <button id="toggleMobileBtn" class="btn mode-btn">Afficher Le Mode Mobile</button>  
+  
+  <!-- Zone de saisie du type et du numéro du mobil-home -->
   <div class="input-container">
     <label for="typeSelect">Type :</label>
     <select id="typeSelect">
@@ -199,6 +295,7 @@
     <label for="numeroInput">Numéro :</label>
     <input type="text" id="numeroInput">
   </div>
+  <!-- Tableau des familles et sous-familles -->
   <table id="criteriaTable">
     <thead>
       <tr>
@@ -208,219 +305,329 @@
       </tr>
     </thead>
     <tbody>
-      <!-- Familles générées dynamiquement -->
+      <!-- Familles générées dynamiquement par JS -->
     </tbody>
   </table>
+  <!-- Liste des critères sélectionnés -->
   <div class="selected-criteria">
     <h3>Critères sélectionnés :</h3>
     <ul id="selectedList"></ul>
   </div>
+  <!-- Bouton de soumission -->
   <button id="submitBtn">Soumettre</button>
 
+  <!-- Message de remerciement après soumission -->
   <div id="thankYouMessage" style="margin-top: 20px; font-weight: bold;"></div>
   <script>
-    const URL = "https://script.google.com/macros/s/AKfycbz7J7fOqS9I0r8BrX8Jv7EasTrbQ_M969qixrNZzNi3Z59lGdhV20rtkXxD_0NaEhwX/exec";
-    let families = [];
-    let selectedCriteria = [];
+    // URL du script Google Apps Script pour la connexion à la Google Sheet
+    const URL = "https://script.google.com/macros/s/AKfycbwXBD9Di4KMlDXpGjtYNcD5KL1Sx5zdmN6U0kXLU6k3hL2YwDE-04SX9N3oZt0l75YS/exec";
+    let families = [];          // Tableau des familles et sous-familles
+    let selectedCriteria = [];  // Liste des critères sélectionnés
 
+    /**
+     * Récupère la liste des familles et sous-familles depuis la Google Sheet.
+     * Initialise le tableau families et lance l'affichage.
+     */
     async function fetchFamilies() {
       try {
         const res = await fetch(URL + "?action=getFamilies");
         const data = await res.json();
-        families = data.map(f => ({ ...f, stars: 0 }));
+        // On enrichit chaque famille avec les étoiles et le format des sous-familles
+        families = data.map(f => ({
+          ...f,
+          stars: 0,
+          subs: f.subs.map(sub => typeof sub === "object" ? sub : { label: sub, count: 0 })
+        }));
         renderFamilies();
       } catch (err) {
+        // Si la récupération échoue, on utilise une liste locale de secours
         alert("Impossible de charger les familles.");
         families = [
           { name: "Terrasse", subs: ["Aucun Problème", "Escaliers HS", "Remplacer Structure", "Remplacer Lames", "Poncer et proteger", "Etat général trop ancien"], stars: 0 },
           { name: "Menuiseries", subs: ["Aucun Problème", "Porte Entree Frotte", "Porte Entree HS", "Fenêtres Bloquée Ch", "Fenêtres Bloquée Sdb", "Fenêtres Blo partagé cuisine", "Fenêtres Bloquée salon", "Etat général trop ancien"], stars: 0 },
           { name: "Plomberie", subs: ["Aucun Problème", "Fuite SDB", "Fuite Cuisine", "Probleme différence de T° de l'eau SDB", "Douche déteriorée", "Joints cuisine HS", "Joints SDB HS", "Etat général trop ancien"], stars: 0 },
           { name: "Electricité", subs: ["Aucun Problème", "Eclairage trop faible", "Manque de prises", "Etat général trop ancien"], stars: 0 },
-          { name: "Piscine", subs: ["Précisez"], stars: 0 },
-          { name: "Rien à signaler dans l'ensemble", subs: ["Rien à signaler pour ce mobilhome"], stars: 0 } // <-- Ajouté ici
+          //{ name: "Piscine", subs: ["Précisez"], stars: 0 },
+          { name: "Rien à signaler dans l'ensemble", subs: ["Rien à signaler pour ce mobilhome"], stars: 0 }
         ];
         renderFamilies();
       }
-        document.getElementById("loader").style.display = "none"; // Cache le loader
+      document.getElementById("loader").style.display = "none"; // Cache le loader
     }
 
+    /**
+     * Affiche dynamiquement le tableau des familles et sous-familles.
+     * Gère aussi le comportement du clic sur chaque famille.
+     */
     function renderFamilies() {
       const tbody = document.querySelector("#criteriaTable tbody");
       tbody.innerHTML = "";
-families.forEach((family, realIndex) => {
-  if (family.name === "MOYENNE") return; // Ne pas afficher la ligne
-  const tr = document.createElement("tr");
-  tr.classList.add("family");
-  tr.dataset.index = realIndex;
+      families.forEach((family, realIndex) => {
+        if (family.name === "MOYENNE") return; // On ignore la ligne "MOYENNE"
+        const tr = document.createElement("tr");
+        tr.classList.add("family");
+        tr.dataset.index = realIndex;
 
-  // Ne pas afficher les étoiles pour "Rien à signaler dans l'ensemble"
-  let starsHtml = "";
-  if (family.name !== "Rien à signaler dans l'ensemble") {
-    starsHtml = Array.from({ length: 5 }, (_, idx) =>
-      `<span class="star ${idx < family.stars ? 'active' : ''}" data-star="${idx + 1}">&#9733;</span>`
-    ).join("");
-  }
-
-  tr.innerHTML = `<td style="width:32px;text-align:center;">${family.name !== "Rien à signaler dans l'ensemble" ? '<span class="arrow">&#9660;</span>' : ''}</td><td>${family.name}</td><td class="stars">${starsHtml}</td>`;
-// ...existing code...
-
-  if (family.name !== "Rien à signaler dans l'ensemble") {
-    tr.querySelectorAll(".star").forEach(starEl => {
-      starEl.onclick = (e) => {
-        e.stopPropagation();
-        const numero = document.getElementById("numeroInput").value.trim();
-        if (!numero) {
-          alert("Merci de renseigner le numéro.");
-          document.getElementById("numeroInput").focus();
-          return;
+        // Génère les étoiles (sauf pour "Rien à signaler dans l'ensemble")
+        let starsHtml = "";
+        if (family.name !== "Rien à signaler dans l'ensemble") {
+          starsHtml = Array.from({ length: 5 }, (_, idx) =>
+            `<span class="star ${idx < family.stars ? 'active' : ''}" data-star="${idx + 1}">&#9733;</span>`
+          ).join("");
         }
-        setStars(realIndex, parseInt(starEl.dataset.star));
-        document.getElementById("submitBtn").disabled = false;
-      };
-    });
-    tr.onclick = () => toggleSubFamilies(tr, family);
-  } else {
-    // Traitement spécial pour "Rien à signaler dans l'ensemble"
-    tr.onclick = () => {
+
+        tr.innerHTML = `<td style="width:32px;text-align:center;">${family.name !== "Rien à signaler dans l'ensemble" ? '<span class="arrow">&#9660;</span>' : ''}</td><td>${family.name}</td><td class="stars">${starsHtml}</td>`;
+
+        // Gestion du clic sur une famille
+        if (family.name === "Rien à signaler dans l'ensemble") {
+  tr.classList.add("signal-btn-row");
+  tr.innerHTML = `<td colspan="3" class="signal-btn-cell">${family.name}</td>`;
+  // Ajoute la classe 'selected' si le critère est sélectionné
+  const key = family.name + " - Rien à signaler pour ce mobilhome";
+  if (selectedCriteria.includes(key)) {
+    tr.querySelector('.signal-btn-cell').classList.add('selected');
+  }
+}
+
+
+
+        if (family.name !== "Rien à signaler dans l'ensemble") {
+          // Clic sur une étoile : sélectionne le nombre d'étoiles
+          tr.querySelectorAll(".star").forEach(starEl => {
+            starEl.onclick = (e) => {
+              e.stopPropagation();
+              const numero = document.getElementById("numeroInput").value.trim();
+              if (!numero) {
+                alert("Merci de renseigner le numéro.");
+                document.getElementById("numeroInput").focus();
+                return;
+              }
+              setStars(realIndex, parseInt(starEl.dataset.star));
+              document.getElementById("submitBtn").disabled = false;
+            };
+          });
+          // Clic sur la famille : affiche/masque les sous-familles
+          tr.onclick = () => toggleSubFamilies(tr, family);
+        } else {
+          // Clic sur "Rien à signaler dans l'ensemble" : coche/décoche toutes les étoiles et gère le critère spécial
+          tr.onclick = async () => {
+            const numero = document.getElementById("numeroInput").value.trim();
+            if (!numero) {
+              alert("Merci de renseigner le numéro.");
+              document.getElementById("numeroInput").focus();
+              return;
+            }
+            const key = family.name + " - Rien à signaler pour ce mobilhome";
+            const type = document.getElementById("typeSelect").value;
+            if (selectedCriteria.includes(key)) {
+              // Si déjà sélectionné : retire le critère et remet toutes les étoiles à gris
+              selectedCriteria = selectedCriteria.filter(c => c !== key);
+              families.forEach(f => {
+                if (f.name !== "MOYENNE") {
+                  f.stars = 0;
+                }
+              });
+              updateSelectedList();
+              renderFamilies();
+              document.getElementById("submitBtn").disabled = false;
+              // Supprime aussi dans la Google Sheet
+              try {
+                await fetch(URL, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                  body: new URLSearchParams({
+                    action: "delete",
+                    type: type,
+                    numero: numero,
+                    famille: family.name,
+                    sousfamille: "Rien à signaler pour ce mobilhome"
+                  })
+                });
+              } catch (err) {
+                alert("Erreur lors de la suppression dans la Google Sheet.");
+              }
+            } else {
+              // Si pas encore sélectionné : coche toutes les étoiles à 4 et ajoute le critère
+              families.forEach(f => {
+                if (f.name !== "MOYENNE") {
+                  f.stars = 4;
+                }
+              });
+              selectedCriteria.push(key);
+              updateSelectedList();
+              renderFamilies();
+              document.getElementById("submitBtn").disabled = false;
+              // Ajout serveur en arrière-plan
+              addCriteria(family.name, "Rien à signaler pour ce mobilhome");
+            }
+          };
+        }
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    /**
+     * Modifie le nombre d'étoiles pour une famille donnée.
+     * @param {number} familyIndex - Index de la famille dans le tableau families
+     * @param {number} starCount - Nombre d'étoiles sélectionnées
+     */
+    function setStars(familyIndex, starCount) {
+      // Si on clique sur la première étoile déjà active, on la désactive (remet à 0)
+      if (families[familyIndex].stars === 1 && starCount === 1) {
+        families[familyIndex].stars = 0;
+      } else {
+        families[familyIndex].stars = starCount;
+      }
+      renderFamilies();
+    }
+
+    /**
+     * Affiche ou masque les sous-familles d'une famille.
+     * Trie les sous-familles, place "Aucun Problème" en haut, et gère la couleur dynamique.
+     * Ajoute aussi le champ "Autre Précisez" avec suggestions dynamiques.
+     * @param {HTMLElement} tr - Ligne de la famille cliquée
+     * @param {Object} family - Objet famille
+     */
+    function toggleSubFamilies(tr, family) {
       const numero = document.getElementById("numeroInput").value.trim();
       if (!numero) {
         alert("Merci de renseigner le numéro.");
         document.getElementById("numeroInput").focus();
         return;
       }
-      families.forEach(f => {
-        if (f.name !== "MOYENNE") {
-          f.stars = 4;
+      // Si les sous-familles sont déjà affichées, on les retire
+      let next = tr.nextSibling;
+      if (next && next.classList && next.classList.contains("subfamily")) {
+        while (next && next.classList && next.classList.contains("subfamily")) {
+          let toRemove = next;
+          next = next.nextSibling;
+          toRemove.remove();
         }
-      });
-      const key = family.name + " - Rien à signaler pour ce mobilhome";
-      if (!selectedCriteria.includes(key)) {
-        addCriteria(family.name, "Rien à signaler pour ce mobilhome");
+        return;
       }
-      renderFamilies();
-      document.getElementById("submitBtn").disabled = false;
-    };
-  }
+      // On retire toutes les sous-familles affichées
+      document.querySelectorAll("tr.subfamily").forEach(s => s.remove());
+      let lastTr = tr;
 
-  tbody.appendChild(tr);
-});
+      // Trie les sous-familles, place "Aucun Problème" en haut
+      let subs = [...family.subs];
+      const indexAucun = subs.findIndex(subObj => {
+        const sub = typeof subObj === "object" ? subObj.label : subObj;
+        return sub === "Aucun Problème";
+      });
+      let aucunProblemeObj = null;
+      if (indexAucun > -1) {
+        aucunProblemeObj = subs.splice(indexAucun, 1)[0];
+        subs.sort((a, b) => {
+          const labelA = typeof a === "object" ? a.label : a;
+          const labelB = typeof b === "object" ? b.label : b;
+          return labelA.localeCompare(labelB);
+        });
+        subs.unshift(aucunProblemeObj);
+      } else {
+        subs.sort((a, b) => {
+          const labelA = typeof a === "object" ? a.label : a;
+          const labelB = typeof b === "object" ? b.label : b;
+          return labelA.localeCompare(labelB);
+        });
+      }
+
+      // Affiche chaque sous-famille avec couleur dynamique selon le nombre d'occurrences
+      subs.forEach(subObj => {
+        const sub = typeof subObj === "object" ? subObj.label : subObj;
+        const count = typeof subObj === "object" ? subObj.count : 0;
+        const subTr = document.createElement("tr");
+        subTr.classList.add("subfamily");
+        if (selectedCriteria.includes(family.name + " - " + sub)) {
+          subTr.classList.add("selected");
+        }
+        // Couleur dynamique du noir (#444) au gris clair (#ccc) selon count
+        const maxCount = 10; // Ajuste selon tes données
+        const colorValue = Math.round(68 + (204 - 68) * Math.min(count, maxCount) / maxCount);
+        const color = `rgb(${colorValue},${colorValue},${colorValue})`;
+        const subDisplay = sub.charAt(0).toUpperCase() + sub.slice(1);
+        subTr.innerHTML = `<td colspan="2" style="color:${color};">${subDisplay}</td>`;
+        subTr.onclick = (e) => {
+          e.stopPropagation();
+          addCriteria(family.name, sub);
+          subTr.classList.add("selected");
+          document.getElementById("submitBtn").disabled = false;
+        };
+        lastTr.after(subTr);
+        lastTr = subTr;
+      });
+
+      // Ajoute le champ "Autre Précisez" avec suggestions dynamiques
+      const customTr = document.createElement("tr");
+      customTr.classList.add("subfamily");
+      customTr.innerHTML = `<td colspan="2">
+        <label for="customInput_${family.name}">Autre Précisez :</label>
+        <input type="text" id="customInput_${family.name}" placeholder="Votre précision..." style="width:60%;">
+        <div id="suggestions_${family.name}" style="background:#fff;border:1px solid #b3d1ff;border-radius:4px;max-height:120px;overflow-y:auto;position:absolute;z-index:10;display:none;"></div>
+        <button id="addCustomBtn_${family.name}" style="margin-left:10px;">Ajouter</button>
+      </td>`;
+      const input = customTr.querySelector(`#customInput_${family.name}`);
+      const suggestionsDiv = customTr.querySelector(`#suggestions_${family.name}`);
+
+      // Suggestions dynamiques lors de la saisie
+      customTr.style.position = "relative";
+      input.addEventListener("input", function () {
+        const val = this.value.trim().toLowerCase();
+        if (!val) {
+          suggestionsDiv.style.display = "none";
+          return;
+        }
+        // Filtre les sous-familles existantes (format objet)
+        const filtered = family.subs
+          .map(subObj => typeof subObj === "object" ? subObj.label : subObj)
+          .filter(label => label.toLowerCase().includes(val));
+        if (filtered.length === 0) {
+          suggestionsDiv.style.display = "none";
+          return;
+        }
+        suggestionsDiv.innerHTML = filtered.map(label =>
+          `<div style="padding:6px;cursor:pointer;">${label.charAt(0).toUpperCase() + label.slice(1)}</div>`
+        ).join("");
+        suggestionsDiv.style.display = "block";
+        // Clic sur une suggestion : remplit le champ
+        Array.from(suggestionsDiv.children).forEach(child => {
+          child.onclick = () => {
+            input.value = child.textContent;
+            suggestionsDiv.style.display = "none";
+          };
+        });
+      });
+
+      // Masque les suggestions si on quitte le champ
+      input.addEventListener("blur", function () {
+        setTimeout(() => { suggestionsDiv.style.display = "none"; }, 150);
+      });
+
+      // Ajout du critère personnalisé
+      customTr.querySelector(`#addCustomBtn_${family.name}`).onclick = (e) => {
+        e.stopPropagation();
+        const value = input.value.trim();
+        if (!value) {
+          alert("Merci de préciser votre remarque.");
+          return;
+        }
+        addCriteria(family.name, value);
+        if (!family.subs.includes(value)) {
+          family.subs.push(value);
+          renderFamilies();
+        }
+        customTr.classList.add("selected");
+        document.getElementById("submitBtn").disabled = false;
+      };
+      lastTr.after(customTr);
     }
 
-    function setStars(familyIndex, starCount) {
-      families[familyIndex].stars = starCount;
-      renderFamilies();
-    }
-
-function toggleSubFamilies(tr, family) {
-  const numero = document.getElementById("numeroInput").value.trim();
-  if (!numero) {
-    alert("Merci de renseigner le numéro.");
-    document.getElementById("numeroInput").focus();
-    return;
-  }
-  let next = tr.nextSibling;
-  if (next && next.classList && next.classList.contains("subfamily")) {
-    while (next && next.classList && next.classList.contains("subfamily")) {
-      let toRemove = next;
-      next = next.nextSibling;
-      toRemove.remove();
-    }
-    return;
-  }
-  document.querySelectorAll("tr.subfamily").forEach(s => s.remove());
-  let lastTr = tr;
-
-  // Nouvelle logique : "Aucun Problème" toujours en haut
-  let subs = [...family.subs];
-  const indexAucun = subs.indexOf("Aucun Problème");
-  if (indexAucun > -1) {
-    subs.splice(indexAucun, 1);
-    // Trie le reste des sous-familles
-    subs.sort((a, b) => a.localeCompare(b));
-    subs.unshift("Aucun Problème");
-  } else {
-    subs.sort((a, b) => a.localeCompare(b));
-  }
-  subs.forEach(sub => {
-    const subTr = document.createElement("tr");
-    subTr.classList.add("subfamily");
-    if (selectedCriteria.includes(family.name + " - " + sub)) {
-      subTr.classList.add("selected");
-    }
-    // Met la première lettre en majuscule
-    const subDisplay = sub.charAt(0).toUpperCase() + sub.slice(1);
-    subTr.innerHTML = `<td colspan="2">${subDisplay}</td>`;
-    subTr.onclick = (e) => {
-      e.stopPropagation();
-      addCriteria(family.name, sub);
-      subTr.classList.add("selected");
-      document.getElementById("submitBtn").disabled = false;
-    };
-    lastTr.after(subTr);
-    lastTr = subTr;
-  });
-  // ...reste inchangé...
-const customTr = document.createElement("tr");
-customTr.classList.add("subfamily");
-customTr.innerHTML = `<td colspan="2">
-  <label for="customInput_${family.name}">Autre Précisez :</label>
-  <input type="text" id="customInput_${family.name}" placeholder="Votre précision..." style="width:60%;">
-  <div id="suggestions_${family.name}" style="background:#fff;border:1px solid #b3d1ff;border-radius:4px;max-height:120px;overflow-y:auto;position:absolute;z-index:10;display:none;"></div>
-  <button id="addCustomBtn_${family.name}" style="margin-left:10px;">Ajouter</button>
-</td>`;
-const input = customTr.querySelector(`#customInput_${family.name}`);
-const suggestionsDiv = customTr.querySelector(`#suggestions_${family.name}`);
-
-// Positionne le suggestionsDiv correctement
-customTr.style.position = "relative";
-input.addEventListener("input", function() {
-  const val = this.value.trim().toLowerCase();
-  if (!val) {
-    suggestionsDiv.style.display = "none";
-    return;
-  }
-  // Filtre les sous-familles existantes
-  const filtered = family.subs.filter(sub => sub.toLowerCase().includes(val));
-  if (filtered.length === 0) {
-    suggestionsDiv.style.display = "none";
-    return;
-  }
-  suggestionsDiv.innerHTML = filtered.map(sub =>
-    `<div style="padding:6px;cursor:pointer;">${sub}</div>`
-  ).join("");
-  suggestionsDiv.style.display = "block";
-  // Ajoute le clic sur chaque suggestion
-  Array.from(suggestionsDiv.children).forEach(child => {
-    child.onclick = () => {
-      input.value = child.textContent;
-      suggestionsDiv.style.display = "none";
-    };
-  });
-});
-
-// Masque les suggestions si on quitte le champ
-input.addEventListener("blur", function() {
-  setTimeout(() => { suggestionsDiv.style.display = "none"; }, 150);
-});
-
-customTr.querySelector(`#addCustomBtn_${family.name}`).onclick = (e) => {
-  e.stopPropagation();
-  const value = input.value.trim();
-  if (!value) {
-    alert("Merci de préciser votre remarque.");
-    return;
-  }
-  addCriteria(family.name, value);
-  if (!family.subs.includes(value)) {
-    family.subs.push(value);
-    renderFamilies();
-  }
-  customTr.classList.add("selected");
-  document.getElementById("submitBtn").disabled = false;
-};
-lastTr.after(customTr);
-}
-
+    /**
+     * Ajoute un critère sélectionné (famille/sous-famille) localement et dans la Google Sheet.
+     * @param {string} family - Nom de la famille
+     * @param {string} sub - Nom de la sous-famille
+     */
     async function addCriteria(family, sub) {
       const key = family + " - " + sub;
       if (!selectedCriteria.includes(key)) {
@@ -451,16 +658,21 @@ lastTr.after(customTr);
       }
     }
 
+    /**
+     * Met à jour la liste des critères sélectionnés (affichage).
+     */
     function updateSelectedList() {
       const ul = document.getElementById("selectedList");
       ul.innerHTML = "";
       selectedCriteria.forEach((c, i) => {
         const li = document.createElement("li");
         li.textContent = c;
+        // Bouton éditer
         const editBtn = document.createElement("span");
         editBtn.textContent = "Éditer";
         editBtn.className = "action-btn";
         editBtn.onclick = () => editCriteria(i);
+        // Bouton supprimer
         const delBtn = document.createElement("span");
         delBtn.textContent = "Supprimer";
         delBtn.className = "action-btn";
@@ -471,6 +683,10 @@ lastTr.after(customTr);
       });
     }
 
+    /**
+     * Supprime un critère sélectionné localement et dans la Google Sheet.
+     * @param {number} index - Index du critère à supprimer
+     */
     async function deleteCriteria(index) {
       const key = selectedCriteria[index];
       const [family, sub] = key.split(" - ");
@@ -498,6 +714,10 @@ lastTr.after(customTr);
       }
     }
 
+    /**
+     * Permet d'éditer une sous-famille sélectionnée (modification locale et Google Sheet).
+     * @param {number} index - Index du critère à éditer
+     */
     function editCriteria(index) {
       const key = selectedCriteria[index];
       const [family, sub] = key.split(" - ");
@@ -526,15 +746,19 @@ lastTr.after(customTr);
       }
     }
 
-    // Initialisation dynamique
+    // ----------- INITIALISATION DE L'APPLICATION -----------
+    // Charge les familles au démarrage
     fetchFamilies();
+    // Place le focus sur le champ numéro au démarrage
     document.getElementById("numeroInput").focus();
 
+    // Gestion du clic sur le bouton "Soumettre"
     document.getElementById("submitBtn").onclick = () => {
       const numero = document.getElementById("numeroInput").value.trim();
       const msgDiv = document.getElementById("thankYouMessage");
       const type = document.getElementById("typeSelect").value;
 
+      // Vérifie la saisie avant soumission
       if (!numero) {
         msgDiv.innerHTML = "";
         alert("Merci de renseigner le numéro.");
@@ -544,26 +768,24 @@ lastTr.after(customTr);
       if (selectedCriteria.length === 0) {
         msgDiv.innerHTML = "";
         alert("Merci de sélectionner au moins un critère.");
-        document.getElementById("numeroInput").focus();   
+        document.getElementById("numeroInput").focus();
         return;
       }
 
+      // Calcule la moyenne des étoiles (hors "Rien à signaler dans l'ensemble")
       const nbFamillesAvecEtoiles = families.filter(f => f.name !== "Rien à signaler dans l'ensemble").length - 1;
-      //alert("Nombre de familles avec étoiles : " + nbFamillesAvecEtoiles);
-     // Ne compte pas les étoiles de "Rien à signaler dans l'ensemble"
       const totalStars = families
         .filter(f => f.name !== "Rien à signaler dans l'ensemble")
         .reduce((sum, f) => sum + f.stars, 0);
-        //alert("Total des étoiles : " + totalStars); // <-- Ajout ici
-
       const avgStars = (totalStars / nbFamillesAvecEtoiles).toFixed(0);
-      //alert("avgStars des étoiles : " + avgStars); // <-- Ajout ici
-      //alert("families.length des étoiles : " + nbFamillesAvecEtoiles); // <-- Ajout ici
+
+      // Affiche le message de remerciement
       msgDiv.innerHTML = `Merci pour votre participation !<br>
         <span style="color:gold;">
           Type : ${type} | Numéro : ${numero} | Moyenne des étoiles : ${avgStars} ⭐
         </span>`;
 
+      // Enregistre la moyenne dans la Google Sheet
       fetch(URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -576,6 +798,7 @@ lastTr.after(customTr);
         })
       });
 
+      // Réinitialise le formulaire et l'affichage
       document.getElementById("submitBtn").disabled = false;
       document.getElementById("numeroInput").value = "";
       document.getElementById("typeSelect").selectedIndex = 0;
@@ -586,9 +809,15 @@ lastTr.after(customTr);
       document.getElementById("numeroInput").focus();
     };
 
+    // Réactive le bouton "Soumettre" si le numéro change
     document.getElementById("numeroInput").addEventListener("input", () => {
-    document.getElementById("submitBtn").disabled = false;
+      document.getElementById("submitBtn").disabled = false;
     });
+
+    document.getElementById("toggleMobileBtn").onclick = function() {
+      document.body.classList.toggle("mobile-mode");
+      this.textContent = document.body.classList.contains("mobile-mode") ? "Afficher Le Mode Ordinateur" : "Afficher Le Mode Mobile";
+    };
   </script>
 </body>
 
